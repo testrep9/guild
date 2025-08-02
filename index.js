@@ -1,10 +1,14 @@
 const express = require('express');
 const app = express();
 
+const VERIFY_TOKEN = '07053119018';
+
+// Home route
 app.get('/', (req, res) => {
   res.send('✅ Meta OAuth Redirect Server is running');
 });
 
+// OAuth Callback route
 app.get('/oauth/callback', (req, res) => {
   const code = req.query.code;
   const error = req.query.error;
@@ -23,6 +27,21 @@ app.get('/oauth/callback', (req, res) => {
     `);
   } else {
     res.send('⚠️ No code or error received.');
+  }
+});
+
+// Webhook verification route
+app.get('/webhook', (req, res) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log('✅ Webhook verified');
+    res.status(200).send(challenge);
+  } else {
+    console.log('❌ Webhook verification failed');
+    res.sendStatus(403);
   }
 });
 
